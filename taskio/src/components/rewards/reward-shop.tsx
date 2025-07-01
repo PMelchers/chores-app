@@ -6,6 +6,7 @@ import { Button } from "../ui/button"
 import { Badge } from "../ui/badge"
 import { Input } from "../ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
+import { PageLayout } from "../layout/page-layout"
 import { Gift, Coins, Star, Search, Filter } from "lucide-react"
 
 type Reward = {
@@ -24,36 +25,14 @@ export function RewardShop() {
   const [userCoins] = useState(156) // Mock user coins
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
-  const [sortBy, setSortBy] = useState("price-low")
+  const [sortBy, setSortBy] = useState("popularity")
 
   const [rewards, setRewards] = useState<Reward[]>([
     {
       id: "1",
       name: "Extra Screen Time",
-      description: "1 hour of additional screen time on weekends",
+      description: "Get an extra hour of screen time for games or videos",
       coinCost: 25,
-      category: "privileges",
-      requiresApproval: false,
-      available: true,
-      popularity: 88,
-      canAfford: true,
-    },
-    {
-      id: "2",
-      name: "Stay Up Late",
-      description: "Stay up 1 hour past bedtime on Friday",
-      coinCost: 30,
-      category: "privileges",
-      requiresApproval: false,
-      available: true,
-      popularity: 78,
-      canAfford: true,
-    },
-    {
-      id: "3",
-      name: "Movie Night",
-      description: "Choose the family movie and get popcorn!",
-      coinCost: 50,
       category: "entertainment",
       requiresApproval: false,
       available: true,
@@ -61,268 +40,296 @@ export function RewardShop() {
       canAfford: true,
     },
     {
-      id: "4",
-      name: "New Book",
-      description: "Choose any book from the bookstore",
-      coinCost: 75,
-      category: "books",
+      id: "2",
+      name: "Movie Night Choice",
+      description: "Pick the movie for family movie night",
+      coinCost: 50,
+      category: "entertainment",
       requiresApproval: false,
       available: true,
-      popularity: 65,
+      popularity: 88,
       canAfford: true,
     },
     {
-      id: "5",
-      name: "Pizza Party",
-      description: "Order pizza for the whole family",
-      coinCost: 150,
+      id: "3",
+      name: "Special Treat",
+      description: "Choose a special dessert or snack",
+      coinCost: 30,
       category: "food",
+      requiresApproval: false,
+      available: true,
+      popularity: 92,
+      canAfford: true,
+    },
+    {
+      id: "4",
+      name: "Stay Up Late",
+      description: "Stay up 30 minutes past bedtime on weekend",
+      coinCost: 40,
+      category: "privileges",
       requiresApproval: true,
       available: true,
       popularity: 85,
       canAfford: true,
     },
     {
-      id: "6",
-      name: "New Toy",
-      description: "Choose a toy up to $25",
-      coinCost: 200,
-      category: "toys",
+      id: "5",
+      name: "Friend Sleepover",
+      description: "Have a friend over for a sleepover",
+      coinCost: 100,
+      category: "social",
       requiresApproval: true,
       available: true,
-      popularity: 92,
-      canAfford: false,
+      popularity: 90,
+      canAfford: true,
+    },
+    {
+      id: "6",
+      name: "New Book",
+      description: "Choose a new book to add to your collection",
+      coinCost: 75,
+      category: "educational",
+      requiresApproval: false,
+      available: true,
+      popularity: 70,
+      canAfford: true,
     },
     {
       id: "7",
-      name: "Video Game",
-      description: "Choose a new video game (up to $60)",
-      coinCost: 500,
-      category: "electronics",
-      requiresApproval: true,
+      name: "Art Supplies",
+      description: "Get new art supplies for creative projects",
+      coinCost: 60,
+      category: "educational",
+      requiresApproval: false,
       available: true,
-      popularity: 98,
-      canAfford: false,
+      popularity: 75,
+      canAfford: true,
     },
     {
       id: "8",
-      name: "Theme Park Trip",
-      description: "Family trip to the local theme park",
-      coinCost: 1000,
-      category: "experiences",
+      name: "Pizza Party",
+      description: "Have pizza for dinner with the family",
+      coinCost: 80,
+      category: "food",
       requiresApproval: true,
       available: true,
-      popularity: 99,
-      canAfford: false,
+      popularity: 93,
+      canAfford: true,
+    },
+    {
+      id: "9",
+      name: "Skip One Chore",
+      description: "Skip one assigned chore for the day",
+      coinCost: 35,
+      category: "privileges",
+      requiresApproval: false,
+      available: true,
+      popularity: 87,
+      canAfford: true,
+    },
+    {
+      id: "10",
+      name: "New Toy",
+      description: "Choose a small toy or game (under $20)",
+      coinCost: 150,
+      category: "toys",
+      requiresApproval: true,
+      available: true,
+      popularity: 95,
+      canAfford: true,
     },
   ])
 
-  const [purchasedRewards, setPurchasedRewards] = useState<string[]>([])
-
-  const handlePurchase = (rewardId: string, coinCost: number) => {
-    if (userCoins >= coinCost) {
-      setPurchasedRewards([...purchasedRewards, rewardId])
-      // In a real app, you'd update the user's coin balance
-      console.log(`Purchased reward ${rewardId} for ${coinCost} coins`)
-    }
-  }
-
   const getCategoryEmoji = (category: string) => {
     const emojis: { [key: string]: string } = {
-      entertainment: "🎬",
-      privileges: "⭐",
-      toys: "🧸",
+      entertainment: "🎮",
       food: "🍕",
-      electronics: "💻",
-      books: "📚",
-      experiences: "🎢",
+      privileges: "⭐",
+      social: "👥",
+      educational: "📚",
+      toys: "🧸",
     }
     return emojis[category] || "🎁"
   }
 
   const getCategoryColor = (category: string) => {
     const colors: { [key: string]: string } = {
-      entertainment: "bg-purple-100 text-purple-800",
-      privileges: "bg-yellow-100 text-yellow-800",
-      toys: "bg-pink-100 text-pink-800",
-      food: "bg-orange-100 text-orange-800",
-      electronics: "bg-blue-100 text-blue-800",
-      books: "bg-green-100 text-green-800",
-      experiences: "bg-red-100 text-red-800",
+      entertainment: "from-blue-500 to-purple-500",
+      food: "from-orange-500 to-red-500",
+      privileges: "from-yellow-500 to-orange-500",
+      social: "from-green-500 to-emerald-500",
+      educational: "from-purple-500 to-pink-500",
+      toys: "from-pink-500 to-red-500",
     }
-    return colors[category] || "bg-gray-100 text-gray-800"
+    return colors[category] || "from-gray-500 to-gray-600"
   }
 
-  // Filter and sort rewards
-  const filteredRewards = rewards.filter((reward) => {
-    const matchesSearch =
-      reward.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      reward.description.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCategory === "all" || reward.category === selectedCategory
-    return matchesSearch && matchesCategory && reward.available
-  })
-
-  // Sort rewards
-  filteredRewards.sort((a, b) => {
-    switch (sortBy) {
-      case "price-low":
-        return a.coinCost - b.coinCost
-      case "price-high":
-        return b.coinCost - a.coinCost
-      case "popularity":
-        return b.popularity - a.popularity
-      case "affordable":
-        return (b.canAfford ? 1 : 0) - (a.canAfford ? 1 : 0)
-      default:
-        return 0
+  const handlePurchase = (rewardId: string) => {
+    const reward = rewards.find((r) => r.id === rewardId)
+    if (reward && userCoins >= reward.coinCost) {
+      // In a real app, this would make an API call
+      alert(`Successfully purchased: ${reward.name}!`)
     }
-  })
+  }
 
-  const affordableCount = rewards.filter((r) => r.canAfford && r.available).length
+  const filteredRewards = rewards
+    .filter((reward) => {
+      const matchesSearch = reward.name.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesCategory = selectedCategory === "all" || reward.category === selectedCategory
+      return matchesSearch && matchesCategory && reward.available
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case "price-low":
+          return a.coinCost - b.coinCost
+        case "price-high":
+          return b.coinCost - a.coinCost
+        case "popularity":
+          return b.popularity - a.popularity
+        default:
+          return 0
+      }
+    })
+
+  const categories = Array.from(new Set(rewards.map((r) => r.category)))
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <Card className="bg-gradient-to-r from-green-500 to-emerald-500 text-white">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl">
-            <Gift className="h-6 w-6" />
-            Super Rewards Shop
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-lg">Your Super Coins</p>
-              <div className="flex items-center gap-2 text-3xl font-bold">
-                <Coins className="h-8 w-8" />
-                {userCoins}
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="text-sm opacity-90">You can afford</p>
-              <p className="text-2xl font-bold">{affordableCount} rewards</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Filters */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search rewards..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full md:w-48">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="privileges">⭐ Privileges</SelectItem>
-                <SelectItem value="entertainment">🎬 Entertainment</SelectItem>
-                <SelectItem value="food">🍕 Food</SelectItem>
-                <SelectItem value="toys">🧸 Toys</SelectItem>
-                <SelectItem value="books">📚 Books</SelectItem>
-                <SelectItem value="electronics">💻 Electronics</SelectItem>
-                <SelectItem value="experiences">🎢 Experiences</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="price-low">Price: Low to High</SelectItem>
-                <SelectItem value="price-high">Price: High to Low</SelectItem>
-                <SelectItem value="popularity">Most Popular</SelectItem>
-                <SelectItem value="affordable">Affordable First</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Rewards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredRewards.map((reward) => {
-          const isPurchased = purchasedRewards.includes(reward.id)
-          const canAfford = userCoins >= reward.coinCost
-
-          return (
-            <Card
-              key={reward.id}
-              className={`relative transition-all duration-200 ${
-                !canAfford ? "opacity-60" : "hover:shadow-lg hover:scale-105"
-              } ${isPurchased ? "bg-green-50 border-green-200" : ""}`}
-            >
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-2">
-                    <span className="text-3xl">{getCategoryEmoji(reward.category)}</span>
-                    <CardTitle className="text-lg">{reward.name}</CardTitle>
-                  </div>
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                    <span>{reward.popularity}%</span>
+    <PageLayout>
+      <div className="p-6">
+        <div className="max-w-7xl mx-auto space-y-8">
+          {/* Header with Coin Balance */}
+          <Card className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 shadow-2xl">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-2xl">
+                    <Gift className="h-6 w-6" />
+                    Reward Shop
+                  </CardTitle>
+                  <p className="text-lg opacity-90">Spend your hard-earned coins on amazing rewards!</p>
+                </div>
+                <div className="text-center">
+                  <div className="bg-white/20 rounded-2xl p-4 backdrop-blur-sm">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <Coins className="h-6 w-6" />
+                      <span className="text-2xl font-bold">{userCoins}</span>
+                    </div>
+                    <p className="text-sm opacity-90">Your Coins</p>
                   </div>
                 </div>
-              </CardHeader>
+              </div>
+            </CardHeader>
+          </Card>
 
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground">{reward.description}</p>
-
-                <div className="flex justify-between items-center">
-                  <Badge
-                    variant="secondary"
-                    className={`font-bold text-lg ${
-                      canAfford ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    🪙 {reward.coinCost}
-                  </Badge>
-                  <Badge variant="outline" className={getCategoryColor(reward.category)}>
-                    {reward.category}
-                  </Badge>
+          {/* Filters and Search */}
+          <Card className="bg-white/10 backdrop-blur-sm border border-white/20 shadow-xl">
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search rewards..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-gray-300 focus:border-purple-400"
+                    />
+                  </div>
                 </div>
+                <div className="flex gap-4">
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="w-40 bg-white/10 border-white/20 text-white">
+                      <Filter className="h-4 w-4 mr-2" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {getCategoryEmoji(category)} {category.charAt(0).toUpperCase() + category.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="w-40 bg-white/10 border-white/20 text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="popularity">Most Popular</SelectItem>
+                      <SelectItem value="price-low">Price: Low to High</SelectItem>
+                      <SelectItem value="price-high">Price: High to Low</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-                {reward.requiresApproval && (
-                  <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-600">
-                    ⏳ Requires Parent Approval
-                  </Badge>
-                )}
+          {/* Rewards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredRewards.map((reward) => (
+              <Card
+                key={reward.id}
+                className={`relative overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20 shadow-xl hover:bg-white/20 transition-all duration-300 transform hover:scale-105 ${
+                  userCoins < reward.coinCost ? "opacity-60" : ""
+                }`}
+              >
+                <div
+                  className={`absolute top-0 right-0 w-16 h-16 bg-gradient-to-br ${getCategoryColor(reward.category)} opacity-20`}
+                ></div>
 
-                {isPurchased ? (
-                  <div className="text-center">
-                    <Badge variant="secondary" className="bg-green-100 text-green-800 text-sm py-2 px-4">
-                      ✅ Purchased! {reward.requiresApproval ? "Pending Approval" : "Enjoy!"}
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-3">
+                      <div className="text-3xl">{getCategoryEmoji(reward.category)}</div>
+                      <div>
+                        <CardTitle className="text-lg text-white">{reward.name}</CardTitle>
+                        <Badge
+                          variant="outline"
+                          className="mt-1 bg-white/20 text-white border-white/30 capitalize text-xs"
+                        >
+                          {reward.category}
+                        </Badge>
+                      </div>
+                    </div>
+                    {reward.popularity > 90 && (
+                      <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold text-xs">
+                        <Star className="h-3 w-3 mr-1" />
+                        Popular
+                      </Badge>
+                    )}
+                  </div>
+                </CardHeader>
+
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-purple-200">{reward.description}</p>
+
+                  <div className="flex justify-between items-center">
+                    <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold px-4 py-2">
+                      <Coins className="h-4 w-4 mr-2" />
+                      {reward.coinCost} coins
                     </Badge>
+                    {reward.requiresApproval && (
+                      <Badge variant="outline" className="bg-blue-500/20 text-blue-300 border-blue-400/30 text-xs">
+                        Needs Approval
+                      </Badge>
+                    )}
                   </div>
-                ) : (
+
                   <Button
-                    onClick={() => handlePurchase(reward.id, reward.coinCost)}
-                    disabled={!canAfford}
-                    className={`w-full ${
-                      canAfford
-                        ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
-                        : ""
+                    onClick={() => handlePurchase(reward.id)}
+                    disabled={userCoins < reward.coinCost}
+                    className={`w-full rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200 ${
+                      userCoins >= reward.coinCost
+                        ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white"
+                        : "bg-gray-500/20 text-gray-400 cursor-not-allowed"
                     }`}
-                    size="lg"
                   >
-                    {canAfford ? (
+                    {userCoins >= reward.coinCost ? (
                       <>
                         <Gift className="h-4 w-4 mr-2" />
-                        {reward.requiresApproval ? "Request Reward" : "Buy Now"}
+                        {reward.requiresApproval ? "Request Purchase" : "Buy Now"}
                       </>
                     ) : (
                       <>
@@ -331,39 +338,52 @@ export function RewardShop() {
                       </>
                     )}
                   </Button>
-                )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
 
-                {!canAfford && (
-                  <div className="text-center text-xs text-muted-foreground">
-                    Complete more chores to earn coins! 💪
-                  </div>
-                )}
+          {/* Empty State */}
+          {filteredRewards.length === 0 && (
+            <Card className="bg-white/10 backdrop-blur-sm border border-white/20 shadow-2xl">
+              <CardContent className="text-center py-16">
+                <div className="text-6xl mb-4">🔍</div>
+                <h3 className="text-xl font-bold text-white mb-2">No Rewards Found</h3>
+                <p className="text-purple-200">Try adjusting your search or filters</p>
               </CardContent>
             </Card>
-          )
-        })}
+          )}
+
+          {/* Coin Earning Tips */}
+          <Card className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-2xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="h-5 w-5" />
+                Need More Coins?
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center p-4 bg-white/20 rounded-xl backdrop-blur-sm">
+                  <div className="text-2xl mb-2">✅</div>
+                  <h4 className="font-bold mb-1">Complete Tasks</h4>
+                  <p className="text-sm opacity-90">Finish daily chores to earn coins</p>
+                </div>
+                <div className="text-center p-4 bg-white/20 rounded-xl backdrop-blur-sm">
+                  <div className="text-2xl mb-2">🗡️</div>
+                  <h4 className="font-bold mb-1">Epic Quests</h4>
+                  <p className="text-sm opacity-90">Complete quests for bonus rewards</p>
+                </div>
+                <div className="text-center p-4 bg-white/20 rounded-xl backdrop-blur-sm">
+                  <div className="text-2xl mb-2">🔥</div>
+                  <h4 className="font-bold mb-1">Streak Bonus</h4>
+                  <p className="text-sm opacity-90">Maintain streaks for extra coins</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-
-      {filteredRewards.length === 0 && (
-        <Card className="text-center py-12">
-          <CardContent>
-            <div className="text-6xl mb-4">🔍</div>
-            <h3 className="text-xl font-bold mb-2">No Rewards Found</h3>
-            <p className="text-muted-foreground">Try adjusting your search or filters to find more rewards!</p>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Motivational Message */}
-      {userCoins < 100 && (
-        <Card className="bg-gradient-to-r from-blue-500 to-purple-500 text-white text-center">
-          <CardContent className="py-6">
-            <div className="text-4xl mb-2">💪</div>
-            <h3 className="text-xl font-bold mb-2">Keep Going!</h3>
-            <p>Complete more chores to earn Super Coins and unlock amazing rewards!</p>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+    </PageLayout>
   )
 }

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
 import { Button } from "../ui/button"
 import { Badge } from "../ui/badge"
 import { Progress } from "../ui/progress"
+import { PageLayout } from "../layout/page-layout"
 import { Sword, Trophy, Star, Clock, CheckCircle2 } from "lucide-react"
 import { format } from "date-fns"
 
@@ -144,172 +145,194 @@ export function QuestList() {
   const completedQuests = quests.filter((quest) => quest.status === "completed")
 
   return (
-    <div className="space-y-6">
-      <Card className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Sword className="h-6 w-6" />
-            Epic Quest Adventures
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-lg">Complete epic quests to earn massive rewards and unlock legendary achievements! 🏆</p>
-          <div className="flex gap-4 mt-4 text-sm">
-            <span>Active Quests: {activeQuests.length}</span>
-            <span>Completed: {completedQuests.length}</span>
-          </div>
-        </CardContent>
-      </Card>
+    <PageLayout>
+      <div className="p-6">
+        <div className="max-w-7xl mx-auto space-y-8">
+          <Card className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-2xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-2xl">
+                <Sword className="h-6 w-6" />
+                Epic Quest Adventures
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-lg">
+                Complete epic quests to earn massive rewards and unlock legendary achievements! 🏆
+              </p>
+              <div className="flex gap-4 mt-4 text-sm">
+                <span>Active Quests: {activeQuests.length}</span>
+                <span>Completed: {completedQuests.length}</span>
+              </div>
+            </CardContent>
+          </Card>
 
-      {activeQuests.length > 0 && (
-        <div>
-          <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <Sword className="h-5 w-5" />
-            Active Quests
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {activeQuests.map((quest) => (
-              <Card
-                key={quest.id}
-                className={`relative overflow-hidden border-2 ${getDifficultyColor(quest.difficulty).split(" ").slice(-1)[0]}`}
-              >
-                <div
-                  className={`absolute top-0 right-0 px-3 py-1 text-xs font-bold ${getDifficultyColor(quest.difficulty)}`}
-                >
-                  {getDifficultyIcon(quest.difficulty)} {quest.difficulty.toUpperCase()}
-                </div>
-
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg pr-20 flex items-center gap-2">
-                    <Sword className="h-5 w-5" />
-                    {quest.title}
-                  </CardTitle>
-                  <div className="flex gap-2">
-                    <Badge variant="outline" className="capitalize">
-                      {quest.type}
-                    </Badge>
-                    <Badge variant={quest.status === "in-progress" ? "default" : "secondary"}>
-                      {quest.status === "in-progress" ? "In Progress" : "Ready to Start"}
-                    </Badge>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-4">
-                  <p className="text-sm text-muted-foreground">{quest.description}</p>
-
-                  <div className="flex justify-between items-center">
-                    <div className="flex space-x-2">
-                      <Badge variant="secondary" className="flex items-center gap-1 bg-yellow-100 text-yellow-800">
-                        🪙 {quest.coinReward}
-                      </Badge>
-                      <Badge variant="secondary" className="flex items-center gap-1 bg-blue-100 text-blue-800">
-                        <Star className="h-3 w-3" />
-                        {quest.xpReward} XP
-                      </Badge>
+          {activeQuests.length > 0 && (
+            <div>
+              <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-white">
+                <Sword className="h-5 w-5" />
+                Active Quests
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {activeQuests.map((quest) => (
+                  <Card
+                    key={quest.id}
+                    className={`relative overflow-hidden border-2 bg-white/10 backdrop-blur-sm shadow-xl hover:bg-white/20 transition-all duration-300 transform hover:scale-105`}
+                  >
+                    <div
+                      className={`absolute top-0 right-0 px-3 py-1 text-xs font-bold ${getDifficultyColor(quest.difficulty)}`}
+                    >
+                      {getDifficultyIcon(quest.difficulty)} {quest.difficulty.toUpperCase()}
                     </div>
-                    {quest.deadline && (
-                      <Badge variant="outline" className="text-xs flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {format(quest.deadline, "MMM dd")}
-                      </Badge>
-                    )}
-                  </div>
 
-                  {quest.status === "in-progress" && (
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">Progress</span>
-                        <span className="text-sm text-muted-foreground">{Math.round(quest.progress)}%</span>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg pr-20 flex items-center gap-2 text-white">
+                        <Sword className="h-5 w-5" />
+                        {quest.title}
+                      </CardTitle>
+                      <div className="flex gap-2">
+                        <Badge variant="outline" className="capitalize bg-white/20 text-white border-white/30">
+                          {quest.type}
+                        </Badge>
+                        <Badge
+                          variant={quest.status === "in-progress" ? "default" : "secondary"}
+                          className="bg-blue-500/20 text-blue-300 border-blue-400/30"
+                        >
+                          {quest.status === "in-progress" ? "In Progress" : "Ready to Start"}
+                        </Badge>
                       </div>
-                      <Progress value={quest.progress} className="h-2" />
-                    </div>
-                  )}
+                    </CardHeader>
 
-                  <div className="space-y-2">
-                    <span className="text-sm font-medium">Quest Requirements:</span>
-                    <div className="space-y-2">
-                      {quest.requirements.map((requirement, index) => (
-                        <div key={index} className="flex items-center gap-3">
-                          <button
-                            onClick={() => toggleRequirement(quest.id, index)}
-                            className={`w-5 h-5 border-2 rounded-sm flex items-center justify-center transition-colors ${
-                              requirement.completed
-                                ? "bg-green-500 border-green-500 text-white"
-                                : "border-gray-300 hover:border-gray-400"
-                            }`}
-                            disabled={quest.status !== "in-progress"}
+                    <CardContent className="space-y-4">
+                      <p className="text-sm text-purple-200">{quest.description}</p>
+
+                      <div className="flex justify-between items-center">
+                        <div className="flex space-x-2">
+                          <Badge
+                            variant="secondary"
+                            className="flex items-center gap-1 bg-yellow-500/20 text-yellow-300 border-yellow-400/30"
                           >
-                            {requirement.completed && <CheckCircle2 className="h-3 w-3" />}
-                          </button>
-                          <span
-                            className={`text-sm ${
-                              requirement.completed ? "line-through text-muted-foreground" : "text-foreground"
-                            }`}
+                            🪙 {quest.coinReward}
+                          </Badge>
+                          <Badge
+                            variant="secondary"
+                            className="flex items-center gap-1 bg-purple-500/20 text-purple-300 border-purple-400/30"
                           >
-                            {requirement.text}
-                          </span>
+                            <Star className="h-3 w-3" />
+                            {quest.xpReward} XP
+                          </Badge>
                         </div>
-                      ))}
-                    </div>
-                  </div>
+                        {quest.deadline && (
+                          <Badge
+                            variant="outline"
+                            className="text-xs flex items-center gap-1 bg-white/20 text-white border-white/30"
+                          >
+                            <Clock className="h-3 w-3" />
+                            {format(quest.deadline, "MMM dd")}
+                          </Badge>
+                        )}
+                      </div>
 
-                  {quest.status === "active" && (
-                    <Button onClick={() => handleStartQuest(quest.id)} className="w-full" size="sm">
-                      Start Quest Adventure! 🚀
-                    </Button>
-                  )}
+                      {quest.status === "in-progress" && (
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium text-white">Progress</span>
+                            <span className="text-sm text-purple-200">{Math.round(quest.progress)}%</span>
+                          </div>
+                          <Progress value={quest.progress} className="h-2" />
+                        </div>
+                      )}
 
-                  {quest.status === "in-progress" && quest.progress === 100 && (
-                    <div className="text-center space-y-2">
-                      <div className="text-4xl">🎉</div>
-                      <Badge variant="secondary" className="bg-green-100 text-green-800">
-                        Quest Complete! Claim your rewards!
-                      </Badge>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                      <div className="space-y-2">
+                        <span className="text-sm font-medium text-white">Quest Requirements:</span>
+                        <div className="space-y-2">
+                          {quest.requirements.map((requirement, index) => (
+                            <div key={index} className="flex items-center gap-3">
+                              <button
+                                onClick={() => toggleRequirement(quest.id, index)}
+                                className={`w-5 h-5 border-2 rounded-sm flex items-center justify-center transition-colors ${
+                                  requirement.completed
+                                    ? "bg-green-500 border-green-500 text-white"
+                                    : "border-gray-300 hover:border-gray-400"
+                                }`}
+                                disabled={quest.status !== "in-progress"}
+                              >
+                                {requirement.completed && <CheckCircle2 className="h-3 w-3" />}
+                              </button>
+                              <span
+                                className={`text-sm ${
+                                  requirement.completed ? "line-through text-purple-300" : "text-white"
+                                }`}
+                              >
+                                {requirement.text}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {quest.status === "active" && (
+                        <Button
+                          onClick={() => handleStartQuest(quest.id)}
+                          className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200"
+                          size="sm"
+                        >
+                          Start Quest Adventure! 🚀
+                        </Button>
+                      )}
+
+                      {quest.status === "in-progress" && quest.progress === 100 && (
+                        <div className="text-center space-y-2">
+                          <div className="text-4xl">🎉</div>
+                          <Badge variant="secondary" className="bg-green-500/20 text-green-300 border-green-400/30">
+                            Quest Complete! Claim your rewards!
+                          </Badge>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {completedQuests.length > 0 && (
+            <div>
+              <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-white">
+                <Trophy className="h-5 w-5 text-yellow-500" />
+                Completed Quests
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {completedQuests.map((quest) => (
+                  <Card key={quest.id} className="bg-green-500/20 border-green-400/30 backdrop-blur-sm">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Trophy className="h-5 w-5 text-yellow-500" />
+                          <span className="font-medium text-white">{quest.title}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-green-300">🪙 +{quest.coinReward}</span>
+                          <span className="text-blue-300">⭐ +{quest.xpReward}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeQuests.length === 0 && completedQuests.length === 0 && (
+            <Card className="text-center py-12 bg-white/10 backdrop-blur-sm border border-white/20 shadow-2xl">
+              <CardContent>
+                <div className="text-6xl mb-4">🗡️</div>
+                <h3 className="text-xl font-bold mb-2 text-white">No Quests Available</h3>
+                <p className="text-purple-200">Check back later for new epic adventures!</p>
+              </CardContent>
+            </Card>
+          )}
         </div>
-      )}
-
-      {completedQuests.length > 0 && (
-        <div>
-          <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-yellow-500" />
-            Completed Quests
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {completedQuests.map((quest) => (
-              <Card key={quest.id} className="bg-green-50 border-green-200">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Trophy className="h-5 w-5 text-yellow-500" />
-                      <span className="font-medium">{quest.title}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="text-green-600">🪙 +{quest.coinReward}</span>
-                      <span className="text-blue-600">⭐ +{quest.xpReward}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {activeQuests.length === 0 && completedQuests.length === 0 && (
-        <Card className="text-center py-12">
-          <CardContent>
-            <div className="text-6xl mb-4">🗡️</div>
-            <h3 className="text-xl font-bold mb-2">No Quests Available</h3>
-            <p className="text-muted-foreground">Check back later for new epic adventures!</p>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+      </div>
+    </PageLayout>
   )
 }

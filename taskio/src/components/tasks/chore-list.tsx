@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
 import { Button } from "../ui/button"
 import { Badge } from "../ui/badge"
 import { Progress } from "../ui/progress"
-import { CheckCircle2, Clock, Star, Coins } from "lucide-react"
+import { PageLayout } from "../layout/page-layout"
+import { CheckCircle2, Clock, Star, Coins, Sparkles, Trophy, Target } from "lucide-react"
 
 type Chore = {
   id: string
@@ -121,114 +122,155 @@ export function ChoreList() {
   }
 
   return (
-    <div className="space-y-6">
-      <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Star className="h-5 w-5" />
-            Today's Progress
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex justify-between items-center">
-            <span className="text-lg">Chores Completed</span>
-            <span className="text-2xl font-bold">
-              {completedCount}/{chores.length}
-            </span>
-          </div>
-          <Progress value={progressPercentage} className="h-3 bg-white/20" />
-          <div className="flex justify-between items-center text-sm">
-            <span>Coins Earned Today: 🪙 {totalCoinsEarned}</span>
-            <span>{Math.round(progressPercentage)}% Complete</span>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {chores.map((chore) => (
-          <Card
-            key={chore.id}
-            className={`transition-all duration-200 ${
-              chore.completed
-                ? "bg-green-50 border-green-200"
-                : chore.pendingApproval
-                  ? "bg-yellow-50 border-yellow-200"
-                  : "hover:shadow-md"
-            }`}
-          >
-            <CardHeader className="pb-3">
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{getCategoryEmoji(chore.category)}</span>
-                  <CardTitle className={`text-lg ${chore.completed ? "line-through text-muted-foreground" : ""}`}>
-                    {chore.title}
-                  </CardTitle>
+    <PageLayout>
+      <div className="p-6">
+        <div className="max-w-6xl mx-auto space-y-8">
+          {/* Progress Card */}
+          <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 shadow-2xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-2xl">
+                <div className="bg-white/20 p-3 rounded-xl">
+                  <Star className="h-6 w-6" />
                 </div>
-                {chore.completed && <CheckCircle2 className="h-5 w-5 text-green-500" />}
-                {chore.pendingApproval && <Clock className="h-5 w-5 text-yellow-500" />}
-              </div>
+                Today's Progress
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-sm text-muted-foreground">{chore.description}</p>
-
+            <CardContent className="space-y-6">
               <div className="flex justify-between items-center">
-                <div className="flex space-x-2">
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    <Coins className="h-3 w-3" />
-                    {chore.coinValue}
-                  </Badge>
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    <Star className="h-3 w-3" />
-                    {chore.xpValue} XP
-                  </Badge>
-                </div>
-                <Badge variant="outline" className="capitalize">
-                  {chore.category}
-                </Badge>
+                <span className="text-lg font-medium">Chores Completed</span>
+                <span className="text-3xl font-bold">
+                  {completedCount}/{chores.length}
+                </span>
               </div>
-
-              {chore.requiresApproval && !chore.completed && !chore.pendingApproval && (
-                <Badge variant="outline" className="text-xs">
-                  Requires Parent Approval
-                </Badge>
-              )}
-
-              {!chore.completed && !chore.pendingApproval && (
-                <Button onClick={() => handleCompleteChore(chore.id)} className="w-full" size="sm">
-                  {chore.requiresApproval ? "Submit for Approval" : "Mark Complete"}
-                </Button>
-              )}
-
-              {chore.pendingApproval && (
-                <div className="text-center">
-                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                    ⏳ Waiting for Parent Approval
-                  </Badge>
-                </div>
-              )}
-
-              {chore.completed && (
-                <div className="text-center">
-                  <Badge variant="secondary" className="bg-green-100 text-green-800">
-                    ✅ Completed! +{chore.coinValue} coins, +{chore.xpValue} XP
-                  </Badge>
-                </div>
-              )}
+              <div className="relative">
+                <Progress value={progressPercentage} className="h-4 bg-white/20" />
+                <div
+                  className="absolute top-0 left-0 h-4 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full transition-all duration-1000 ease-out"
+                  style={{ width: `${progressPercentage}%` }}
+                ></div>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="flex items-center gap-2">
+                  <Coins className="h-4 w-4" />
+                  Coins Earned Today: {totalCoinsEarned}
+                </span>
+                <span className="flex items-center gap-2">
+                  <Target className="h-4 w-4" />
+                  {Math.round(progressPercentage)}% Complete
+                </span>
+              </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
 
-      {completedCount === chores.length && (
-        <Card className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-center">
-          <CardContent className="py-8">
-            <div className="text-6xl mb-4">🎉</div>
-            <h3 className="text-2xl font-bold mb-2">Amazing Work!</h3>
-            <p className="text-lg">You've completed all your chores for today!</p>
-            <p className="text-sm mt-2">Total earned: 🪙 {totalCoinsEarned} coins</p>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+          {/* Chores Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {chores.map((chore) => (
+              <Card
+                key={chore.id}
+                className={`transition-all duration-300 transform hover:scale-105 ${
+                  chore.completed
+                    ? "bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-400/30"
+                    : chore.pendingApproval
+                      ? "bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border-yellow-400/30"
+                      : "bg-white/10 border-white/20 hover:bg-white/20"
+                } backdrop-blur-sm shadow-xl`}
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-3">
+                      <div className="text-3xl">{getCategoryEmoji(chore.category)}</div>
+                      <div>
+                        <CardTitle
+                          className={`text-lg ${chore.completed ? "line-through text-green-300" : "text-white"}`}
+                        >
+                          {chore.title}
+                        </CardTitle>
+                        <Badge className="mt-1 bg-white/20 text-white border border-white/30 capitalize">
+                          {chore.category}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1">
+                      {chore.completed && <CheckCircle2 className="h-6 w-6 text-green-400" />}
+                      {chore.pendingApproval && <Clock className="h-6 w-6 text-yellow-400 animate-pulse" />}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-purple-200">{chore.description}</p>
+
+                  <div className="flex justify-between items-center">
+                    <div className="flex space-x-2">
+                      <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold px-3 py-1">
+                        <Coins className="h-3 w-3 mr-1" />
+                        {chore.coinValue}
+                      </Badge>
+                      <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold px-3 py-1">
+                        <Star className="h-3 w-3 mr-1" />
+                        {chore.xpValue} XP
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {chore.requiresApproval && !chore.completed && !chore.pendingApproval && (
+                    <Badge className="bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs">
+                      Requires Parent Approval
+                    </Badge>
+                  )}
+
+                  {!chore.completed && !chore.pendingApproval && (
+                    <Button
+                      onClick={() => handleCompleteChore(chore.id)}
+                      className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200"
+                    >
+                      {chore.requiresApproval ? "Submit for Approval" : "Mark Complete"}
+                    </Button>
+                  )}
+
+                  {chore.pendingApproval && (
+                    <div className="text-center">
+                      <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold px-4 py-2">
+                        <Clock className="h-4 w-4 mr-2" />
+                        Waiting for Parent Approval
+                      </Badge>
+                    </div>
+                  )}
+
+                  {chore.completed && (
+                    <div className="text-center">
+                      <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold px-4 py-2">
+                        <Trophy className="h-4 w-4 mr-2" />
+                        Completed! +{chore.coinValue} coins, +{chore.xpValue} XP
+                      </Badge>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Completion Celebration */}
+          {completedCount === chores.length && (
+            <Card className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-center border-0 shadow-2xl">
+              <CardContent className="py-12">
+                <div className="text-8xl mb-6">🎉</div>
+                <h3 className="text-4xl font-bold mb-4">Amazing Work!</h3>
+                <p className="text-xl mb-4">You've completed all your chores for today!</p>
+                <div className="flex justify-center items-center gap-4 text-lg">
+                  <Badge className="bg-white/20 text-white font-bold px-6 py-3 text-lg">
+                    <Coins className="h-5 w-5 mr-2" />
+                    Total earned: {totalCoinsEarned} coins
+                  </Badge>
+                  <Badge className="bg-white/20 text-white font-bold px-6 py-3 text-lg">
+                    <Sparkles className="h-5 w-5 mr-2" />
+                    You're a champion!
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
+    </PageLayout>
   )
 }

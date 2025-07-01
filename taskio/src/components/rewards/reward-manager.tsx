@@ -6,9 +6,11 @@ import { Button } from "../ui/button"
 import { Input } from "../ui/input"
 import { Label } from "../ui/label"
 import { Textarea } from "../ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Switch } from "../ui/switch"
 import { Badge } from "../ui/badge"
-import { Plus, Gift, Trash2, Edit, Star } from "lucide-react"
+import { PageLayout } from "../layout/page-layout"
+import { Plus, Gift, Edit, Trash2, Settings, Sparkles } from "lucide-react"
 
 type Reward = {
   id: string
@@ -18,7 +20,6 @@ type Reward = {
   category: string
   requiresApproval: boolean
   available: boolean
-  imageUrl?: string
   popularity: number
 }
 
@@ -26,9 +27,9 @@ export function RewardManager() {
   const [rewards, setRewards] = useState<Reward[]>([
     {
       id: "1",
-      name: "Movie Night",
-      description: "Choose the family movie and get popcorn!",
-      coinCost: 50,
+      name: "Extra Screen Time",
+      description: "Get an extra hour of screen time for games or videos",
+      coinCost: 25,
       category: "entertainment",
       requiresApproval: false,
       available: true,
@@ -36,53 +37,43 @@ export function RewardManager() {
     },
     {
       id: "2",
-      name: "Extra Screen Time",
-      description: "1 hour of additional screen time on weekends",
-      coinCost: 25,
-      category: "privileges",
+      name: "Movie Night Choice",
+      description: "Pick the movie for family movie night",
+      coinCost: 50,
+      category: "entertainment",
       requiresApproval: false,
       available: true,
       popularity: 88,
     },
     {
       id: "3",
-      name: "New Video Game",
-      description: "Choose a new video game (up to $60)",
-      coinCost: 500,
-      category: "toys",
-      requiresApproval: true,
+      name: "Special Treat",
+      description: "Choose a special dessert or snack",
+      coinCost: 30,
+      category: "food",
+      requiresApproval: false,
       available: true,
       popularity: 92,
     },
     {
       id: "4",
-      name: "Pizza Party",
-      description: "Order pizza for the whole family",
-      coinCost: 150,
-      category: "food",
+      name: "Stay Up Late",
+      description: "Stay up 30 minutes past bedtime on weekend",
+      coinCost: 40,
+      category: "privileges",
       requiresApproval: true,
       available: true,
       popularity: 85,
     },
     {
       id: "5",
-      name: "New Laptop",
-      description: "Brand new laptop for school and fun",
-      coinCost: 5000,
-      category: "electronics",
+      name: "Friend Sleepover",
+      description: "Have a friend over for a sleepover",
+      coinCost: 100,
+      category: "social",
       requiresApproval: true,
       available: true,
-      popularity: 98,
-    },
-    {
-      id: "6",
-      name: "Stay Up Late",
-      description: "Stay up 1 hour past bedtime on Friday",
-      coinCost: 30,
-      category: "privileges",
-      requiresApproval: false,
-      available: true,
-      popularity: 78,
+      popularity: 90,
     },
   ])
 
@@ -96,6 +87,30 @@ export function RewardManager() {
     available: true,
   })
 
+  const getCategoryEmoji = (category: string) => {
+    const emojis: { [key: string]: string } = {
+      entertainment: "🎮",
+      food: "🍕",
+      privileges: "⭐",
+      social: "👥",
+      educational: "📚",
+      toys: "🧸",
+    }
+    return emojis[category] || "🎁"
+  }
+
+  const getCategoryColor = (category: string) => {
+    const colors: { [key: string]: string } = {
+      entertainment: "from-blue-500 to-purple-500",
+      food: "from-orange-500 to-red-500",
+      privileges: "from-yellow-500 to-orange-500",
+      social: "from-green-500 to-emerald-500",
+      educational: "from-purple-500 to-pink-500",
+      toys: "from-pink-500 to-red-500",
+    }
+    return colors[category] || "from-gray-500 to-gray-600"
+  }
+
   const handleCreateReward = () => {
     if (newReward.name && newReward.description) {
       const reward: Reward = {
@@ -106,7 +121,7 @@ export function RewardManager() {
         category: newReward.category || "entertainment",
         requiresApproval: newReward.requiresApproval || false,
         available: newReward.available !== false,
-        popularity: Math.floor(Math.random() * 20) + 80,
+        popularity: 0,
       }
       setRewards([...rewards, reward])
       setNewReward({
@@ -129,249 +144,262 @@ export function RewardManager() {
     setRewards(rewards.map((reward) => (reward.id === id ? { ...reward, available: !reward.available } : reward)))
   }
 
-  const getCategoryEmoji = (category: string) => {
-    const emojis: { [key: string]: string } = {
-      entertainment: "🎬",
-      privileges: "⭐",
-      toys: "🧸",
-      food: "🍕",
-      electronics: "💻",
-      books: "📚",
-      experiences: "🎢",
-    }
-    return emojis[category] || "🎁"
-  }
-
-  const getCategoryColor = (category: string) => {
-    const colors: { [key: string]: string } = {
-      entertainment: "bg-purple-100 text-purple-800",
-      privileges: "bg-yellow-100 text-yellow-800",
-      toys: "bg-pink-100 text-pink-800",
-      food: "bg-orange-100 text-orange-800",
-      electronics: "bg-blue-100 text-blue-800",
-      books: "bg-green-100 text-green-800",
-      experiences: "bg-red-100 text-red-800",
-    }
-    return colors[category] || "bg-gray-100 text-gray-800"
-  }
-
-  const sortedRewards = [...rewards].sort((a, b) => a.coinCost - b.coinCost)
-
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">Super Rewards Shop</h2>
-          <p className="text-muted-foreground">Create and manage rewards that kids can redeem with Super Coins</p>
-        </div>
-        <Button onClick={() => setIsCreating(true)} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Add Reward
-        </Button>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+    <PageLayout>
+      <div className="p-6">
+        <div className="max-w-7xl mx-auto space-y-8">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <div className="bg-gradient-to-r from-pink-500 to-red-500 p-3 rounded-xl">
+                <Gift className="h-6 w-6 text-white" />
+              </div>
               <div>
-                <p className="text-sm text-muted-foreground">Total Rewards</p>
-                <p className="text-2xl font-bold">{rewards.length}</p>
-              </div>
-              <Gift className="h-8 w-8 text-muted-foreground" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Available</p>
-                <p className="text-2xl font-bold text-green-600">{rewards.filter((r) => r.available).length}</p>
-              </div>
-              <div className="text-green-500">✅</div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Require Approval</p>
-                <p className="text-2xl font-bold text-orange-600">{rewards.filter((r) => r.requiresApproval).length}</p>
-              </div>
-              <div className="text-orange-500">⏳</div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Avg. Cost</p>
-                <p className="text-2xl font-bold text-yellow-600">
-                  🪙 {Math.round(rewards.reduce((sum, r) => sum + r.coinCost, 0) / rewards.length)}
-                </p>
-              </div>
-              <div className="text-yellow-500">💰</div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {isCreating && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Gift className="h-5 w-5" />
-              Create New Reward
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="reward-name">Reward Name</Label>
-                <Input
-                  id="reward-name"
-                  value={newReward.name}
-                  onChange={(e) => setNewReward({ ...newReward, name: e.target.value })}
-                  placeholder="e.g., Movie Night"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="coin-cost">Super Coin Cost</Label>
-                <Input
-                  id="coin-cost"
-                  type="number"
-                  value={newReward.coinCost}
-                  onChange={(e) => setNewReward({ ...newReward, coinCost: Number.parseInt(e.target.value) })}
-                  min="1"
-                  max="10000"
-                />
+                <h2 className="text-2xl font-bold text-white">Reward Management</h2>
+                <p className="text-purple-200">Create and manage family rewards and incentives</p>
               </div>
             </div>
+            <Button
+              onClick={() => setIsCreating(true)}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-3 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create Reward
+            </Button>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="reward-description">Description</Label>
-              <Textarea
-                id="reward-description"
-                value={newReward.description}
-                onChange={(e) => setNewReward({ ...newReward, description: e.target.value })}
-                placeholder="Describe what the child gets..."
-              />
-            </div>
+          {isCreating && (
+            <Card className="bg-white/10 backdrop-blur-sm border border-white/20 shadow-2xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-white">
+                  <Sparkles className="h-5 w-5 text-yellow-400" />
+                  Create New Reward
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="reward-name" className="text-white font-medium">
+                      Reward Name
+                    </Label>
+                    <Input
+                      id="reward-name"
+                      value={newReward.name}
+                      onChange={(e) => setNewReward({ ...newReward, name: e.target.value })}
+                      placeholder="e.g., Extra Screen Time"
+                      className="bg-white/10 border-white/20 text-white placeholder:text-gray-300 focus:border-purple-400"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="reward-category" className="text-white font-medium">
+                      Category
+                    </Label>
+                    <Select
+                      value={newReward.category}
+                      onValueChange={(value) => setNewReward({ ...newReward, category: value })}
+                    >
+                      <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="entertainment">🎮 Entertainment</SelectItem>
+                        <SelectItem value="food">🍕 Food & Treats</SelectItem>
+                        <SelectItem value="privileges">⭐ Privileges</SelectItem>
+                        <SelectItem value="social">👥 Social</SelectItem>
+                        <SelectItem value="educational">📚 Educational</SelectItem>
+                        <SelectItem value="toys">🧸 Toys & Games</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <select
-                id="category"
-                value={newReward.category}
-                onChange={(e) => setNewReward({ ...newReward, category: e.target.value })}
-                className="w-full p-2 border rounded-md"
+                <div className="space-y-2">
+                  <Label htmlFor="reward-description" className="text-white font-medium">
+                    Description
+                  </Label>
+                  <Textarea
+                    id="reward-description"
+                    value={newReward.description}
+                    onChange={(e) => setNewReward({ ...newReward, description: e.target.value })}
+                    placeholder="Describe what this reward includes..."
+                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-300 focus:border-purple-400"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="coin-cost" className="text-white font-medium">
+                    Coin Cost
+                  </Label>
+                  <Input
+                    id="coin-cost"
+                    type="number"
+                    value={newReward.coinCost}
+                    onChange={(e) => setNewReward({ ...newReward, coinCost: Number.parseInt(e.target.value) })}
+                    min="1"
+                    max="500"
+                    className="bg-white/10 border-white/20 text-white focus:border-purple-400"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="requires-approval"
+                      checked={newReward.requiresApproval}
+                      onCheckedChange={(checked) => setNewReward({ ...newReward, requiresApproval: checked })}
+                    />
+                    <Label htmlFor="requires-approval" className="text-white">
+                      Requires Parent Approval
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="available"
+                      checked={newReward.available !== false}
+                      onCheckedChange={(checked) => setNewReward({ ...newReward, available: checked })}
+                    />
+                    <Label htmlFor="available" className="text-white">
+                      Available in Shop
+                    </Label>
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsCreating(false)}
+                    className="bg-white/20 hover:bg-white/30 text-white border-white/20"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleCreateReward}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-2 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Reward
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {rewards.map((reward) => (
+              <Card
+                key={reward.id}
+                className={`relative overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20 shadow-xl hover:bg-white/20 transition-all duration-300 transform hover:scale-105 ${
+                  !reward.available ? "opacity-60" : ""
+                }`}
               >
-                <option value="entertainment">🎬 Entertainment</option>
-                <option value="privileges">⭐ Privileges</option>
-                <option value="toys">🧸 Toys</option>
-                <option value="food">🍕 Food</option>
-                <option value="electronics">💻 Electronics</option>
-                <option value="books">📚 Books</option>
-                <option value="experiences">🎢 Experiences</option>
-              </select>
-            </div>
+                <div
+                  className={`absolute top-0 right-0 w-16 h-16 bg-gradient-to-br ${getCategoryColor(reward.category)} opacity-20`}
+                ></div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="requires-approval"
-                  checked={newReward.requiresApproval}
-                  onCheckedChange={(checked) => setNewReward({ ...newReward, requiresApproval: checked })}
-                />
-                <Label htmlFor="requires-approval">Requires Parent Approval</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="available"
-                  checked={newReward.available !== false}
-                  onCheckedChange={(checked) => setNewReward({ ...newReward, available: checked })}
-                />
-                <Label htmlFor="available">Available for Purchase</Label>
-              </div>
-            </div>
+                <CardHeader className="pb-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-3">
+                      <div className="text-2xl">{getCategoryEmoji(reward.category)}</div>
+                      <div>
+                        <CardTitle className="text-lg text-white">{reward.name}</CardTitle>
+                        <Badge
+                          variant="outline"
+                          className="mt-1 bg-white/20 text-white border-white/30 capitalize text-xs"
+                        >
+                          {reward.category}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="flex space-x-1">
+                      <Button className="bg-white/20 hover:bg-white/30 text-white p-2 rounded-lg">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        onClick={() => handleDeleteReward(reward.id)}
+                        className="bg-red-500/20 hover:bg-red-500/30 text-red-300 p-2 rounded-lg"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
 
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setIsCreating(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleCreateReward}>Create Reward</Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-purple-200">{reward.description}</p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {sortedRewards.map((reward) => (
-          <Card key={reward.id} className={`relative ${!reward.available ? "opacity-60" : ""}`}>
-            <CardHeader className="pb-3">
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{getCategoryEmoji(reward.category)}</span>
-                  <CardTitle className="text-lg">{reward.name}</CardTitle>
+                  <div className="flex justify-between items-center">
+                    <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold px-3 py-1">
+                      🪙 {reward.coinCost} coins
+                    </Badge>
+                    {reward.popularity > 0 && (
+                      <Badge variant="outline" className="bg-white/20 text-white border-white/30 text-xs">
+                        {reward.popularity}% popular
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {reward.requiresApproval && (
+                      <Badge variant="outline" className="bg-blue-500/20 text-blue-300 border-blue-400/30 text-xs">
+                        Approval Required
+                      </Badge>
+                    )}
+                    <Badge
+                      variant={reward.available ? "default" : "secondary"}
+                      className={`text-xs ${
+                        reward.available
+                          ? "bg-green-500/20 text-green-300 border-green-400/30"
+                          : "bg-gray-500/20 text-gray-300 border-gray-400/30"
+                      }`}
+                    >
+                      {reward.available ? "Available" : "Unavailable"}
+                    </Badge>
+                  </div>
+
+                  <div className="flex justify-between items-center pt-2">
+                    <Button
+                      onClick={() => toggleAvailability(reward.id)}
+                      size="sm"
+                      className={`${
+                        reward.available
+                          ? "bg-orange-500/20 hover:bg-orange-500/30 text-orange-300"
+                          : "bg-green-500/20 hover:bg-green-500/30 text-green-300"
+                      } border border-current/30 rounded-lg`}
+                    >
+                      {reward.available ? "Disable" : "Enable"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="bg-white/20 hover:bg-white/30 text-white border border-white/20 rounded-lg"
+                    >
+                      <Settings className="h-4 w-4 mr-1" />
+                      Settings
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {rewards.length === 0 && (
+            <Card className="bg-white/10 backdrop-blur-sm border border-white/20 shadow-2xl">
+              <CardContent className="text-center py-16">
+                <div className="bg-gradient-to-r from-pink-500 to-red-500 w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center">
+                  <Gift className="h-10 w-10 text-white" />
                 </div>
-                <div className="flex space-x-1">
-                  <Button variant="ghost" size="sm">
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => handleDeleteReward(reward.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-sm text-muted-foreground">{reward.description}</p>
-
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 font-bold">
-                    🪙 {reward.coinCost}
-                  </Badge>
-                  <Badge variant="secondary" className={getCategoryColor(reward.category)}>
-                    {reward.category}
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                  <span>{reward.popularity}%</span>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-1">
-                {reward.requiresApproval && (
-                  <Badge variant="outline" className="text-xs">
-                    Requires Approval
-                  </Badge>
-                )}
-                {!reward.available && (
-                  <Badge variant="outline" className="text-xs bg-red-50 text-red-600">
-                    Unavailable
-                  </Badge>
-                )}
-              </div>
-
-              <div className="flex justify-between items-center pt-2">
-                <Button variant="outline" size="sm" onClick={() => toggleAvailability(reward.id)}>
-                  {reward.available ? "Disable" : "Enable"}
+                <h3 className="text-2xl font-bold text-white mb-4">No Rewards Created Yet</h3>
+                <p className="text-purple-200 mb-6">Start creating amazing rewards for your family!</p>
+                <Button
+                  onClick={() => setIsCreating(true)}
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-3 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-200"
+                >
+                  <Plus className="h-5 w-5 mr-2" />
+                  Create Your First Reward
                 </Button>
-                <span className="text-xs text-muted-foreground">{reward.popularity}% popularity</span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
-    </div>
+    </PageLayout>
   )
 }
