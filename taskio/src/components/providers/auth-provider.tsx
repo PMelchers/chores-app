@@ -2,13 +2,18 @@
 
 import type React from "react"
 import { createContext, useContext, useEffect, useState } from "react"
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut as firebaseSignOut,
+  onAuthStateChanged,
+  type User as FirebaseUser
+} from 'firebase/auth'
+import { doc, setDoc, getDoc } from 'firebase/firestore'
+import { auth, db } from '../../firebase/config'
 
-// Mock Firebase types - replace with actual Firebase imports
-type User = {
-  uid: string
-  email: string
-  displayName: string
-}
+// Firebase User types
+type User = FirebaseUser
 
 type UserRole = "parent" | "child"
 
@@ -29,34 +34,65 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Mock authentication - replace with Firebase auth
-    const mockUser = {
-      uid: "mock-user-id",
-      email: "parent@example.com",
-      displayName: "Parent User",
-    }
-
-    setTimeout(() => {
-      setUser(mockUser)
-      setUserRole("parent") // Change to 'child' to test child dashboard
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser)
+        
+        // Get user role from Firestore
+        try {
+          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid))
+          if (userDoc.exists()) {
+            setUserRole(userDoc.data().role as UserRole)
+          } else {
+            // Default role if not found
+            setUserRole('parent')
+          }
+        } catch (error) {
+          console.error('Error fetching user role:', error)
+          setUserRole('parent')
+        }
+      } else {
+        setUser(null)
+        setUserRole(null)
+      }
       setLoading(false)
-    }, 1000)
+    })
+
+    return () => unsubscribe()
   }, [])
 
   const signIn = async (email: string, password: string) => {
-    // Implement Firebase signIn
-    console.log("Sign in:", email)
+    try {
+      await signInWithEmailAndPassword(auth, email, password)
+    } catch (error) {
+      console.error('Error signing in:', error)
+      throw error
+    }
   }
 
   const signUp = async (email: string, password: string, role: UserRole) => {
-    // Implement Firebase signUp
-    console.log("Sign up:", email, role)
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+      
+      // Save user role to Firestore
+      await setDoc(doc(db, 'users', userCredential.user.uid), {
+        email: userCredential.user.email,
+        role,
+        createdAt: new Date(),
+      })
+    } catch (error) {
+      console.error('Error signing up:', error)
+      throw error
+    }
   }
 
   const signOut = async () => {
-    // Implement Firebase signOut
-    setUser(null)
-    setUserRole(null)
+    try {
+      await firebaseSignOut(auth)
+    } catch (error) {
+      console.error('Error signing out:', error)
+      throw error
+    }
   }
 
   return (
