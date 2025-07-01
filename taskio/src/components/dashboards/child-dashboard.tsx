@@ -8,11 +8,9 @@ import { Progress } from "../ui/progress"
 import { useAuth } from "../providers/auth-provider"
 import { useTasks } from "../../hooks/useTasks"
 import { LoadingSpinner } from "../ui/loading-spinner"
-import { databaseService } from "../../firebase/database"
 import { 
   CheckCircle,
   Clock,
-  LogOut,
   Star,
   Trophy,
   Target,
@@ -22,82 +20,14 @@ import {
 import { format } from "date-fns"
 
 export function ChildDashboard() {
-  const { user, signOut } = useAuth()
+  const { user } = useAuth()
   const { tasks, loading, toggleTaskCompletion, error } = useTasks()
-
-  console.log('ChildDashboard: Rendering with', { 
-    user: user?.uid, 
-    tasksCount: tasks.length, 
-    loading, 
-    error,
-    tasks: tasks 
-  });
 
   const handleToggleTask = async (taskId: string) => {
     try {
       await toggleTaskCompletion(taskId)
     } catch (error) {
       console.error("Failed to toggle task:", error)
-    }
-  }
-
-  const handleDebugAllTasks = async () => {
-    try {
-      console.log('Debug: Fetching all tasks from database...');
-      const allTasks = await databaseService.getAllTasks();
-      console.log('Debug: All tasks in database:', allTasks);
-      console.log('Debug: Current user ID:', user?.uid);
-      console.log('Debug: Current user email:', user?.email);
-      
-      // Check each task in detail
-      allTasks.forEach((task, index) => {
-        console.log(`Debug: Task ${index + 1}:`, {
-          id: task.id,
-          title: task.title,
-          assignedTo: task.assignedTo,
-          createdBy: task.createdBy,
-          assignedToType: typeof task.assignedTo,
-          isAssignedToCurrentUser: task.assignedTo === user?.uid,
-          isAssignedToCurrentEmail: task.assignedTo === user?.email
-        });
-      });
-      
-      console.log('Debug: Tasks assigned to current user (by UID):', allTasks.filter(task => task.assignedTo === user?.uid));
-      console.log('Debug: Tasks assigned to current user (by email):', allTasks.filter(task => task.assignedTo === user?.email));
-      
-      // Fix tasks that are assigned by email instead of user ID
-      const tasksAssignedByEmail = allTasks.filter(task => task.assignedTo === user?.email);
-      if (tasksAssignedByEmail.length > 0) {
-        console.log('Debug: Found tasks assigned by email, updating to user ID...');
-        for (const task of tasksAssignedByEmail) {
-          if (task.id) {
-            try {
-              await databaseService.updateTask(task.id, { assignedTo: user?.uid });
-              console.log(`Debug: Updated task ${task.id} assignedTo from email to user ID`);
-            } catch (error) {
-              console.error(`Debug: Failed to update task ${task.id}:`, error);
-            }
-          }
-        }
-        alert('Fixed task assignments! The tasks should now appear in your dashboard.');
-      }
-      
-      // Create a test task if none exist
-      if (allTasks.length === 0) {
-        console.log('Debug: No tasks found. Creating a test task...');
-        const testTask = await databaseService.addTask({
-          title: 'Test Task for Child',
-          description: 'This is a test task to debug the issue',
-          completed: false,
-          assignedTo: user?.uid || 'unknown', 
-          createdBy: 'debug-parent',
-          points: 15,
-          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-        });
-        console.log('Debug: Created test task:', testTask);
-      }
-    } catch (error) {
-      console.error('Debug: Error fetching all tasks:', error);
     }
   }
 
@@ -122,21 +52,6 @@ export function ChildDashboard() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">My Tasks Dashboard</h1>
             <p className="text-gray-600">Welcome back, {user?.email}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={handleDebugAllTasks}
-              className="flex items-center gap-2 border border-blue-300 hover:bg-blue-50 px-4 py-2 rounded-md transition-colors text-blue-600"
-            >
-              Debug Tasks
-            </Button>
-            <Button
-              onClick={signOut}
-              className="flex items-center gap-2 border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-md transition-colors"
-            >
-              <LogOut className="h-4 w-4" />
-              Sign Out
-            </Button>
           </div>
         </div>
 

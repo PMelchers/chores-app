@@ -21,27 +21,16 @@ import {
   Clock,
   Trash2,
   Edit2,
-  LogOut,
   Star,
   Target
 } from "lucide-react"
 import { format } from "date-fns"
 
 export function ParentDashboard() {
-  const { user, userRole, signOut } = useAuth()
-  const { tasks, loading, addTask, updateTask, deleteTask, toggleTaskCompletion, error } = useTasks()
-
-  console.log('ParentDashboard: Rendering with', { 
-    user: user?.uid, 
-    userRole,
-    tasksCount: tasks.length, 
-    loading, 
-    error,
-    tasks: tasks 
-  });
+  const { user } = useAuth()
+  const { tasks, loading, addTask, deleteTask, toggleTaskCompletion, error } = useTasks()
 
   const [showAddTask, setShowAddTask] = useState(false)
-  const [editingTask, setEditingTask] = useState<string | null>(null)
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
@@ -59,13 +48,10 @@ export function ParentDashboard() {
       
       // If assignedTo is provided, try to find the user by email and convert to user ID
       if (newTask.assignedTo && newTask.assignedTo.trim()) {
-        console.log('Looking up user by email:', newTask.assignedTo);
         const user = await databaseService.getUserByEmail(newTask.assignedTo.trim());
         if (user) {
           assignedToUserId = user.id;
-          console.log('Found user ID:', assignedToUserId);
         } else {
-          console.warn('User not found with email:', newTask.assignedTo);
           alert(`User with email "${newTask.assignedTo}" not found. Please make sure they have registered.`);
           return;
         }
@@ -125,10 +111,6 @@ export function ParentDashboard() {
             <h1 className="text-3xl font-bold text-gray-900">Parent Dashboard</h1>
             <p className="text-gray-600">Welcome back, {user?.email}</p>
           </div>
-          <Button onClick={signOut} className="flex items-center gap-2 border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-md transition-colors">
-            <LogOut className="h-4 w-4" />
-            Sign Out
-          </Button>
         </div>
 
         {error && (
