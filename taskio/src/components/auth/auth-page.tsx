@@ -53,7 +53,7 @@ export function AuthPage() {
               <Trophy className="h-8 w-8" />
             </div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-              Family Quest
+              Task.io
             </h1>
           </div>
 
@@ -92,7 +92,7 @@ export function AuthPage() {
         {/* Auth Form */}
         <Card className="w-full max-w-md mx-auto">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Welcome to Family Quest</CardTitle>
+            <CardTitle className="text-2xl">Welcome to Task.io</CardTitle>
             <p className="text-muted-foreground">Sign in or create your family account</p>
           </CardHeader>
           <CardContent>

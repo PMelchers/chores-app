@@ -26,7 +26,7 @@ export function ParentDashboard() {
                 <Trophy className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Family Quest</h1>
+                <h1 className="text-2xl font-bold text-gray-900">Task.io</h1>
                 <p className="text-sm text-gray-500">Parent Dashboard</p>
               </div>
             </div>
