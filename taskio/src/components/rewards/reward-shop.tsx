@@ -478,9 +478,9 @@ export function RewardShop() {
         <CardContent>
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-lg">Your Gaming Coins 💰</p>
+              <p className="text-lg">Your Gaming Coins</p>
               <div className="flex items-center gap-2 text-3xl font-bold">
-                <Coins className="h-8 w-8" />
+                🪙
                 {userCoins}
               </div>
             </div>
