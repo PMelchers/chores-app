@@ -14,7 +14,8 @@ import { PageLayout } from "../layout/page-layout"
 import { Crown, Shield, Star, Sparkles, Heart, Trophy, Target, Zap } from "lucide-react"
 
 export function AuthPage() {
-  const { signIn, signUp, loading, error } = useAuth()
+  const { signIn, signUp, loading } = useAuth()
+  const [error, setError] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -23,14 +24,22 @@ export function AuthPage() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     if (email && password) {
-      await signIn(email, password)
+      try {
+        await signIn(email, password)
+      } catch (err: any) {
+        setError(err.message || 'Failed to sign in')
+      }
     }
   }
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     if (email && password && password === confirmPassword) {
-      await signUp(email, password, role)
+      try {
+        await signUp(email, password, role)
+      } catch (err: any) {
+        setError(err.message || 'Failed to create account')
+      }
     }
   }
 
@@ -276,24 +285,6 @@ export function AuthPage() {
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes shake {
-          0%, 100% {
-            transform: translateX(0);
-          }
-          25% {
-            transform: translateX(-5px);
-          }
-          75% {
-            transform: translateX(5px);
-          }
-        }
-        
-        .animate-shake {
-          animation: shake 0.5s ease-in-out;
-        }
-      `}</style>
     </PageLayout>
   )
 }

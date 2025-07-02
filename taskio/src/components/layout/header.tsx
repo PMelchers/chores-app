@@ -18,7 +18,6 @@ import {
   Gift,
   History,
   Users,
-  User,
 } from "lucide-react"
 
 interface HeaderProps {
@@ -189,28 +188,7 @@ export function Header({ title, subtitle, userRole, currentPage, onPageChange, s
         </div>
       </div>
 
-      <style jsx>{`
-        @keyframes float {
-          0%, 100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-10px);
-          }
-        }
-        
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
-        }
-        
-        .animation-delay-1000 {
-          animation-delay: 1s;
-        }
-        
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-      `}</style>
+
     </div>
   )
 }

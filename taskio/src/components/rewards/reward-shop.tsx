@@ -27,7 +27,7 @@ export function RewardShop() {
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [sortBy, setSortBy] = useState("popularity")
 
-  const [rewards, setRewards] = useState<Reward[]>([
+  const [rewards] = useState<Reward[]>([
     {
       id: "1",
       name: "Extra Screen Time",

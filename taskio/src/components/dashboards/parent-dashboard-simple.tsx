@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useAuth } from "../providers/auth-provider"
 import { useTasks } from "../../hooks/useTasks"
 import { LoadingSpinner } from "../ui/loading-spinner"
 import {
@@ -21,6 +22,7 @@ import { Badge } from "../ui/badge"
 import { Textarea } from "../ui/textarea"
 
 export function ParentDashboard() {
+  const { user } = useAuth()
   const { tasks, loading, addTask, toggleTaskCompletion } = useTasks()
 
   const [showAddTask, setShowAddTask] = useState(false)
@@ -76,8 +78,22 @@ export function ParentDashboard() {
   }
 
   return (
-    <div className="p-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4">
       <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Parent Dashboard</h1>
+            <p className="text-gray-600">Welcome back, {user?.email}</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-2">
+              <Trophy className="h-4 w-4 mr-2" />
+              {totalPoints} Points Earned
+            </Badge>
+          </div>
+        </div>
+
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>

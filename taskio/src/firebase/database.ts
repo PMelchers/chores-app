@@ -51,7 +51,7 @@ export class DatabaseService {
   // Collection references
   private tasksCollection = collection(db, 'tasks');
   private usersCollection = collection(db, 'users');
-  private familiesCollection = collection(db, 'families');
+  // private familiesCollection = collection(db, 'families'); // TODO: Implement family features
 
   // Task methods
   async addTask(task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
