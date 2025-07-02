@@ -459,45 +459,77 @@ export function RewardShop() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <Card className="bg-gradient-to-r from-green-500 to-emerald-500 text-white">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-2xl">
-              <Gift className="h-6 w-6" />
-              Epic Rewards Shop 🔥
-            </CardTitle>
-            {userRole === 'parent' && pendingApprovals.length > 0 && (
-              <Badge className="bg-orange-500 text-white text-lg px-3 py-1">
-                {pendingApprovals.length} pending request{pendingApprovals.length !== 1 ? 's' : ''}
-              </Badge>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-lg">Your Gaming Coins 💰</p>
-              <div className="flex items-center gap-2 text-3xl font-bold">
-                <Coins className="h-8 w-8" />
-                {userCoins}
-              </div>
-            </div>
-            <div className="text-right">
-              {userRole === 'parent' ? (
-                <>
-                  <p className="text-sm opacity-90">You can afford</p>
-                  <p className="text-2xl font-bold">{affordableCount} rewards</p>
-                </>
-              ) : (
-                <>
-                  <p className="text-sm opacity-90">Total rewards earned</p>
-                  <p className="text-2xl font-bold">{purchases.filter(p => p.status === 'approved').length}</p>
-                </>
+    <div className={userRole === 'child' ? "min-h-screen p-4" : "space-y-6"} style={userRole === 'child' ? {
+      background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7, #dda0dd, #ff6b6b)',
+      backgroundSize: '400% 400%',
+      animation: 'rainbow 3s ease infinite'
+    } : {}}>
+      {userRole === 'child' && (
+        <style>{`
+          @keyframes rainbow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+          @keyframes shop-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+          }
+          @keyframes coin-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      )}
+      <div className={userRole === 'child' ? "max-w-6xl mx-auto space-y-6" : "space-y-6"}>
+        {/* Header */}
+        <Card className={`${
+          userRole === 'child' 
+            ? 'bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-500 text-white shadow-2xl transform hover:scale-105 transition-all duration-300 border-4 border-yellow-400' 
+            : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
+        }`}>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className={`flex items-center gap-2 ${userRole === 'child' ? 'text-3xl font-bold animate-bounce' : 'text-2xl'}`}>
+                <Gift className={`h-6 w-6 ${userRole === 'child' ? 'h-8 w-8 animate-bounce' : ''}`} />
+                {userRole === 'child' ? '🏪 ULTIMATE EPIC REWARDS SHOP! 🏪' : 'Epic Rewards Shop 🔥'}
+              </CardTitle>
+              {userRole === 'parent' && pendingApprovals.length > 0 && (
+                <Badge className="bg-orange-500 text-white text-lg px-3 py-1">
+                  {pendingApprovals.length} pending request{pendingApprovals.length !== 1 ? 's' : ''}
+                </Badge>
               )}
             </div>
-          </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-between items-center">
+              <div>
+                <p className={`text-lg ${userRole === 'child' ? 'font-bold text-xl animate-pulse' : ''}`}>
+                  {userRole === 'child' ? '🪙 Your Epic Gaming Coins! 🪙' : 'Your Gaming Coins 💰'}
+                </p>
+                <div className={`flex items-center gap-2 text-3xl font-bold ${userRole === 'child' ? 'text-5xl animate-bounce' : ''}`}>
+                  <Coins className={`h-8 w-8 ${userRole === 'child' ? 'h-12 w-12 animate-spin' : ''}`} style={userRole === 'child' ? { animation: 'coin-spin 2s linear infinite' } : {}} />
+                  {userCoins}
+                </div>
+              </div>
+              <div className="text-right">
+                {userRole === 'parent' ? (
+                  <>
+                    <p className="text-sm opacity-90">You can afford</p>
+                    <p className="text-2xl font-bold">{affordableCount} rewards</p>
+                  </>
+                ) : (
+                  <>
+                    <p className={`text-sm opacity-90 ${userRole === 'child' ? 'text-lg font-bold' : ''}`}>
+                      {userRole === 'child' ? '🏆 Total Epic Rewards Earned!' : 'Total rewards earned'}
+                    </p>
+                    <p className={`text-2xl font-bold ${userRole === 'child' ? 'text-4xl animate-pulse' : ''}`}>
+                      {purchases.filter(p => p.status === 'approved').length}
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
         </CardContent>
       </Card>
 
@@ -952,14 +984,26 @@ export function RewardShop() {
 
       {/* Motivational Message */}
       {userCoins < 50 && (
-        <Card className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-center">
+        <Card className={`text-center ${
+          userRole === 'child' 
+            ? 'bg-gradient-to-r from-rainbow-500 via-purple-500 to-pink-500 text-white shadow-2xl transform hover:scale-105 transition-all duration-300 border-4 border-purple-400' 
+            : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+        }`}>
           <CardContent className="py-6">
-            <div className="text-4xl mb-2">💪</div>
-            <h3 className="text-xl font-bold mb-2">Keep Grinding! 🔥</h3>
-            <p>Complete more chores to stack those coins and unlock epic rewards! No cap! 📈</p>
+            <div className={`text-4xl mb-2 ${userRole === 'child' ? 'text-6xl animate-bounce' : ''}`}>💪</div>
+            <h3 className={`text-xl font-bold mb-2 ${userRole === 'child' ? 'text-3xl animate-pulse' : ''}`}>
+              {userRole === 'child' ? '🔥 KEEP GRINDING, LEGEND! 🔥' : 'Keep Grinding! 🔥'}
+            </h3>
+            <p className={userRole === 'child' ? 'text-lg font-bold' : ''}>
+              {userRole === 'child' 
+                ? 'Complete more chores to stack those coins and unlock LEGENDARY rewards! No cap fr fr! 📈🚀' 
+                : 'Complete more chores to stack those coins and unlock epic rewards! No cap! 📈'
+              }
+            </p>
           </CardContent>
         </Card>
       )}
+      </div>
     </div>
   )
 }

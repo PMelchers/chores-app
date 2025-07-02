@@ -23,6 +23,9 @@ export type Task = {
   title: string;
   description?: string;
   completed: boolean;
+  pendingApproval?: boolean; // New field for pending approval state
+  approvedBy?: string; // Who approved the task
+  approvedAt?: Date | Timestamp; // When the task was approved
   assignedTo?: string; // User ID
   createdBy: string; // User ID
   dueDate?: Date;
@@ -132,8 +135,13 @@ export class DatabaseService {
   // Task methods
   async addTask(task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
     try {
+      // Remove undefined fields to prevent Firebase errors
+      const cleanTask = Object.fromEntries(
+        Object.entries(task).filter(([_, value]) => value !== undefined)
+      );
+      
       const newTask = {
-        ...task,
+        ...cleanTask,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };
@@ -232,28 +240,116 @@ export class DatabaseService {
     });
   }
 
-  // Toggle task completion
-  async toggleTaskCompletion(taskId: string): Promise<void> {
+  // Child marks task as ready for approval (pending)
+  async submitTaskForApproval(taskId: string, userId: string): Promise<void> {
     try {
       const taskRef = doc(db, 'tasks', taskId);
       const taskDoc = await getDoc(taskRef);
       
       if (taskDoc.exists()) {
         const task = taskDoc.data() as Task;
-        const newCompletedStatus = !task.completed;
         
-        await updateDoc(taskRef, {
-          completed: newCompletedStatus,
-          updatedAt: serverTimestamp()
-        });
-
-        // If task is being completed, award coins to the assigned user
-        if (newCompletedStatus && task.assignedTo && task.points) {
-          await this.awardCoinsToUser(task.assignedTo, task.points);
+        // Only allow if task is assigned to this user and not already completed
+        if (task.assignedTo === userId && !task.completed && !task.pendingApproval) {
+          await updateDoc(taskRef, {
+            pendingApproval: true,
+            updatedAt: serverTimestamp()
+          });
+        } else {
+          throw new Error('Task cannot be submitted for approval');
         }
+      } else {
+        throw new Error('Task not found');
       }
     } catch (error) {
-      console.error('Error toggling task completion:', error);
+      console.error('Error submitting task for approval:', error);
+      throw error;
+    }
+  }
+
+  // Parent approves or denies a task
+  async approveTask(taskId: string, approved: boolean, parentId: string): Promise<void> {
+    try {
+      const taskRef = doc(db, 'tasks', taskId);
+      const taskDoc = await getDoc(taskRef);
+      
+      if (taskDoc.exists()) {
+        const task = taskDoc.data() as Task;
+        
+        // Only allow if task is pending approval
+        if (task.pendingApproval) {
+          if (approved) {
+            // Task approved - mark as completed and award coins
+            await updateDoc(taskRef, {
+              completed: true,
+              pendingApproval: false,
+              approvedBy: parentId,
+              approvedAt: serverTimestamp(),
+              updatedAt: serverTimestamp()
+            });
+
+            // Award coins to the child
+            if (task.assignedTo && task.points) {
+              await this.awardCoinsToUser(task.assignedTo, task.points);
+            }
+          } else {
+            // Task denied - reset to not pending
+            await updateDoc(taskRef, {
+              pendingApproval: false,
+              updatedAt: serverTimestamp()
+            });
+          }
+        } else {
+          throw new Error('Task is not pending approval');
+        }
+      } else {
+        throw new Error('Task not found');
+      }
+    } catch (error) {
+      console.error('Error approving/denying task:', error);
+      throw error;
+    }
+  }
+
+  // Get pending tasks for parent approval
+  async getPendingTasks(parentId?: string): Promise<Task[]> {
+    try {
+      let q;
+      if (parentId) {
+        // Get tasks created by this parent that are pending approval
+        q = query(
+          this.tasksCollection, 
+          where('createdBy', '==', parentId),
+          where('pendingApproval', '==', true),
+          orderBy('updatedAt', 'desc')
+        );
+      } else {
+        // Get all pending tasks
+        q = query(
+          this.tasksCollection, 
+          where('pendingApproval', '==', true),
+          orderBy('updatedAt', 'desc')
+        );
+      }
+      
+      const querySnapshot = await getDocs(q);
+      const tasks: Task[] = [];
+      
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        tasks.push({
+          id: doc.id,
+          ...data,
+          createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : data.createdAt,
+          updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : data.updatedAt,
+          dueDate: data.dueDate?.toDate ? data.dueDate.toDate() : data.dueDate,
+          approvedAt: data.approvedAt?.toDate ? data.approvedAt.toDate() : data.approvedAt
+        } as Task);
+      });
+      
+      return tasks;
+    } catch (error) {
+      console.error('Error getting pending tasks:', error);
       throw error;
     }
   }

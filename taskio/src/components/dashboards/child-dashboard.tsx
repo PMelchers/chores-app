@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Button } from "../ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Badge } from "../ui/badge"
@@ -8,6 +9,7 @@ import { Progress } from "../ui/progress"
 import { useAuth } from "../providers/auth-provider"
 import { useTasks } from "../../hooks/useTasks"
 import { LoadingSpinner } from "../ui/loading-spinner"
+import { databaseService } from "../../firebase/database"
 import { 
   CheckCircle,
   Clock,
@@ -19,20 +21,45 @@ import {
 } from "lucide-react"
 import { format } from "date-fns"
 
-export function ChildDashboard() {
+export function ChildDashboard({ onNavigate }: { onNavigate?: (tab: string) => void }) {
   const { user } = useAuth()
-  const { tasks, loading, toggleTaskCompletion, error } = useTasks()
+  const { tasks, loading, submitTaskForApproval, error } = useTasks()
+  const [rewards, setRewards] = useState<any[]>([])
+  const [userCoins, setUserCoins] = useState(0)
 
-  const handleToggleTask = async (taskId: string) => {
+  // Load user coins and top rewards
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (!user) return
+      
+      try {
+        // Get user coins
+        const userData = await databaseService.getUser(user.uid)
+        setUserCoins(userData?.coins || 0)
+        
+        // Get top 3 rewards for preview
+        const allRewards = await databaseService.getRewards()
+        const topRewards = allRewards.slice(0, 3)
+        setRewards(topRewards)
+      } catch (error) {
+        console.error("Failed to load user data:", error)
+      }
+    }
+
+    loadUserData()
+  }, [user])
+
+  const handleSubmitTask = async (taskId: string) => {
     try {
-      await toggleTaskCompletion(taskId)
+      await submitTaskForApproval(taskId)
     } catch (error) {
-      console.error("Failed to toggle task:", error)
+      console.error("Failed to submit task:", error)
     }
   }
 
   const completedTasks = tasks.filter((task: any) => task.completed)
-  const pendingTasks = tasks.filter((task: any) => !task.completed)
+  const pendingTasks = tasks.filter((task: any) => !task.completed && !task.pendingApproval)
+  const awaitingApproval = tasks.filter((task: any) => task.pendingApproval)
   const totalPoints = completedTasks.reduce((sum: number, task: any) => sum + (task.points || 0), 0)
   const completionRate = tasks.length > 0 ? Math.round((completedTasks.length / tasks.length) * 100) : 0
 
@@ -45,7 +72,23 @@ export function ChildDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4">
+    <div className="min-h-screen p-4" style={{
+      background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7, #dda0dd, #ff6b6b)',
+      backgroundSize: '400% 400%',
+      animation: 'rainbow 3s ease infinite'
+    }}>
+      <style>{`
+        @keyframes rainbow {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @keyframes rainbow-button {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+      `}</style>
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -129,7 +172,7 @@ export function ChildDashboard() {
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
                 <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                  <div className="text-2xl font-bold text-yellow-600">{totalPoints}</div>
+                  <div className="text-2xl font-bold text-yellow-600">{userCoins}</div>
                   <div className="text-sm text-yellow-700">Points Earned</div>
                 </div>
                 <div className="text-center p-4 bg-green-50 rounded-lg">
@@ -156,8 +199,9 @@ export function ChildDashboard() {
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="pending" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
+                  <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="pending">To Do ({pendingTasks.length})</TabsTrigger>
+                    <TabsTrigger value="awaiting">Awaiting ({awaitingApproval.length})</TabsTrigger>
                     <TabsTrigger value="completed">Done ({completedTasks.length})</TabsTrigger>
                     <TabsTrigger value="all">All ({tasks.length})</TabsTrigger>
                   </TabsList>
@@ -173,7 +217,24 @@ export function ChildDashboard() {
                         <ChildTaskCard 
                           key={task.id} 
                           task={task} 
-                          onToggle={handleToggleTask}
+                          onSubmit={handleSubmitTask}
+                        />
+                      ))
+                    )}
+                  </TabsContent>
+                  
+                  <TabsContent value="awaiting" className="space-y-3 mt-4">
+                    {awaitingApproval.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <Clock className="h-12 w-12 mx-auto mb-3 text-yellow-400" />
+                        <p>No tasks waiting for approval 👍</p>
+                      </div>
+                    ) : (
+                      awaitingApproval.map((task: any) => (
+                        <ChildTaskCard 
+                          key={task.id} 
+                          task={task} 
+                          onSubmit={handleSubmitTask}
                         />
                       ))
                     )}
@@ -190,7 +251,7 @@ export function ChildDashboard() {
                         <ChildTaskCard 
                           key={task.id} 
                           task={task} 
-                          onToggle={handleToggleTask}
+                          onSubmit={handleSubmitTask}
                         />
                       ))
                     )}
@@ -207,7 +268,7 @@ export function ChildDashboard() {
                         <ChildTaskCard 
                           key={task.id} 
                           task={task} 
-                          onToggle={handleToggleTask}
+                          onSubmit={handleSubmitTask}
                         />
                       ))
                     )}
@@ -219,38 +280,64 @@ export function ChildDashboard() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Points & Rewards */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Gift className="h-5 w-5" />
-                  Rewards
+            {/* Rewards Shop Preview */}
+            <Card className="bg-gradient-to-br from-purple-100 via-pink-100 to-yellow-100 border-2 border-purple-300 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105"
+              onClick={() => onNavigate && onNavigate('rewards')}
+            >
+              <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg">
+                <CardTitle className="flex items-center gap-2 text-center justify-center">
+                  <Gift className="h-6 w-6 animate-bounce" />
+                  🏪 EPIC REWARD SHOP 🏪
+                  <Gift className="h-6 w-6 animate-bounce" />
                 </CardTitle>
+                <div className="text-center text-sm font-bold">
+                  🪙 {userCoins} Coins Available 🪙
+                </div>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="text-center p-4 bg-gradient-to-r from-yellow-100 to-yellow-200 rounded-lg">
-                    <Star className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
-                    <div className="text-lg font-bold text-yellow-800">{totalPoints} Points</div>
-                    <div className="text-sm text-yellow-700">Available to spend</div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-gray-900">Upcoming Rewards</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                        <span>Movie Night</span>
-                        <Badge className="border border-gray-300 text-gray-600">50 pts</Badge>
-                      </div>
-                      <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                        <span>Extra Allowance</span>
-                        <Badge className="border border-gray-300 text-gray-600">100 pts</Badge>
-                      </div>
-                      <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                        <span>Choose Dinner</span>
-                        <Badge className="border border-gray-300 text-gray-600">25 pts</Badge>
-                      </div>
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  {/* Featured Rewards - Real rewards from database */}
+                  {rewards.length === 0 ? (
+                    <div className="text-center py-4 text-purple-600">
+                      <Gift className="h-8 w-8 mx-auto mb-2" />
+                      <p className="text-sm font-bold">Loading awesome rewards...</p>
                     </div>
+                  ) : (
+                    rewards.map((reward) => (
+                      <Card key={reward.id} className="bg-white border-2 border-yellow-300 hover:shadow-md transition-all duration-200 hover:scale-105">
+                        <CardContent className="p-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-2xl">{reward.icon || '🎁'}</span>
+                            <div className="flex-1">
+                              <div className="font-bold text-gray-900 text-sm">{reward.name}</div>
+                              <div className="text-xs text-gray-600">{reward.description || 'An awesome reward!'}</div>
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <Badge className="bg-green-100 text-green-800 font-bold">
+                              🪙 {reward.cost}
+                            </Badge>
+                            <Badge className="bg-blue-100 text-blue-800">{reward.category || 'special'}</Badge>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
+                  
+                  {/* Click to Shop Button */}
+                  <Button 
+                    className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-3 text-sm shadow-lg transform hover:scale-105 transition-all duration-300"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onNavigate && onNavigate('rewards')
+                    }}
+                  >
+                    <Gift className="h-4 w-4 mr-2" />
+                    🛒 VISIT FULL SHOP - MORE EPIC REWARDS! 🛒
+                  </Button>
+                  
+                  <div className="text-center text-xs text-purple-600 font-bold animate-bounce">
+                    ✨ Click anywhere to explore the full shop! ✨
                   </div>
                 </div>
               </CardContent>
@@ -302,24 +389,45 @@ export function ChildDashboard() {
 // Child Task Card Component
 function ChildTaskCard({ 
   task, 
-  onToggle 
+  onSubmit 
 }: { 
   task: any
-  onToggle: (id: string) => void
+  onSubmit: (id: string) => void
 }) {
+  const getTaskStatus = () => {
+    if (task.completed) return 'completed'
+    if (task.pendingApproval) return 'pending'
+    return 'todo'
+  }
+
+  const status = getTaskStatus()
+
   return (
-    <Card className={`transition-all cursor-pointer ${task.completed ? 'bg-green-50 border-green-200' : 'bg-white hover:shadow-md'}`}>
+    <Card className={`transition-all ${
+      status === 'completed' ? 'bg-green-50 border-green-200' : 
+      status === 'pending' ? 'bg-yellow-50 border-yellow-200' : 
+      'bg-white hover:shadow-md'
+    }`}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex items-start space-x-3 flex-1">
-            <Button
-              onClick={() => task.id && onToggle(task.id)}
-              className={`p-1 bg-transparent border-none hover:bg-gray-100 text-sm ${task.completed ? 'text-green-600' : 'text-gray-400 hover:text-green-600'}`}
-            >
-              <CheckCircle className={`h-6 w-6 ${task.completed ? 'fill-current' : ''}`} />
-            </Button>
+            <div className="mt-1">
+              {status === 'completed' && (
+                <CheckCircle className="h-6 w-6 text-green-600 fill-current" />
+              )}
+              {status === 'pending' && (
+                <Clock className="h-6 w-6 text-yellow-600 animate-pulse" />
+              )}
+              {status === 'todo' && (
+                <CheckCircle className="h-6 w-6 text-gray-300" />
+              )}
+            </div>
             <div className="flex-1">
-              <h4 className={`font-medium ${task.completed ? 'text-green-800 line-through' : 'text-gray-900'}`}>
+              <h4 className={`font-medium ${
+                status === 'completed' ? 'text-green-800 line-through' : 
+                status === 'pending' ? 'text-yellow-800' :
+                'text-gray-900'
+              }`}>
                 {task.title}
               </h4>
               {task.description && (
@@ -338,13 +446,52 @@ function ChildTaskCard({
                     Due: {format(new Date(task.dueDate), 'MMM d')}
                   </Badge>
                 )}
-                {task.completed && (
+                {status === 'completed' && (
                   <Badge className="bg-green-600 text-white">
                     <Trophy className="h-3 w-3 mr-1" />
-                    Completed!
+                    Approved!
+                  </Badge>
+                )}
+                {status === 'pending' && (
+                  <Badge className="bg-yellow-500 text-white">
+                    <Clock className="h-3 w-3 mr-1" />
+                    Waiting for approval
                   </Badge>
                 )}
               </div>
+              
+              {/* Action button for todo tasks */}
+              {status === 'todo' && (
+                <Button
+                  onClick={() => task.id && onSubmit(task.id)}
+                  className="mt-3 w-full bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white font-bold shadow-lg transform hover:scale-105 transition-all duration-300"
+                  size="sm"
+                >
+                  🎯 I'm Done! (Ask Parent to Check) 
+                </Button>
+              )}
+              
+              {status === 'pending' && (
+                <div className="mt-3 text-center bg-gradient-to-r from-yellow-100 to-orange-100 p-3 rounded-lg border-2 border-yellow-400">
+                  <p className="text-sm text-yellow-800 font-bold animate-pulse">
+                    ⏰ Waiting for parent approval...
+                  </p>
+                  <p className="text-xs text-yellow-700 mt-1">
+                    🚫 You cannot change this until parent approves!
+                  </p>
+                </div>
+              )}
+              
+              {status === 'completed' && (
+                <div className="mt-3 text-center bg-gradient-to-r from-green-100 to-emerald-100 p-3 rounded-lg border-2 border-green-400">
+                  <p className="text-sm text-green-800 font-bold">
+                    🎉 APPROVED! You earned {task.points || 0} coins! 🪙
+                  </p>
+                  <p className="text-xs text-green-700 mt-1">
+                    ✅ This task is permanently completed!
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -12,7 +12,7 @@ export function AvatarPetPanel() {
   const [selectedAvatar, setSelectedAvatar] = useState("👧")
   const [selectedPet, setSelectedPet] = useState("🐱")
   const [selectedTheme, setSelectedTheme] = useState("space")
-  const [petLevel, setPetLevel] = useState(5)
+  const [petLevel] = useState(5)
   const [petHappiness, setPetHappiness] = useState(85)
   const [petHunger, setPetHunger] = useState(60)
 

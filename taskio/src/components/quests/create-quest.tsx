@@ -137,7 +137,7 @@ export function CreateQuest() {
 
     setLoading(true)
     try {
-      const questId = await createQuest({
+      await createQuest({
         title: formData.title,
         description: formData.description,
         difficulty: formData.difficulty,

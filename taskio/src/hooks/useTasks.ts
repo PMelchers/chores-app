@@ -67,9 +67,44 @@ export function useTasks() {
     }
   };
 
+  const submitTaskForApproval = async (taskId: string) => {
+    if (!user) throw new Error('User not authenticated');
+    
+    try {
+      await databaseService.submitTaskForApproval(taskId, user.uid);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to submit task for approval');
+      throw err;
+    }
+  };
+
+  const approveTask = async (taskId: string, approved: boolean) => {
+    if (!user) throw new Error('User not authenticated');
+    
+    try {
+      await databaseService.approveTask(taskId, approved, user.uid);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to approve task');
+      throw err;
+    }
+  };
+
+  const getPendingTasks = async () => {
+    if (!user) return [];
+    
+    try {
+      return await databaseService.getPendingTasks(user.uid);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to get pending tasks');
+      throw err;
+    }
+  };
+
   const toggleTaskCompletion = async (taskId: string) => {
     try {
-      await databaseService.toggleTaskCompletion(taskId);
+      // This method is now deprecated - use submitTaskForApproval or approveTask instead
+      console.warn('toggleTaskCompletion is deprecated. Use submitTaskForApproval or approveTask instead.');
+      await databaseService.submitTaskForApproval(taskId, user?.uid || '');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to toggle task');
       throw err;
@@ -83,6 +118,9 @@ export function useTasks() {
     addTask,
     updateTask,
     deleteTask,
-    toggleTaskCompletion,
+    toggleTaskCompletion, // Deprecated - use submitTaskForApproval instead
+    submitTaskForApproval,
+    approveTask,
+    getPendingTasks,
   };
 }

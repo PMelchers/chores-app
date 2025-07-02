@@ -118,6 +118,7 @@ export function FamilyAdmin() {
   }
 
   const activeMembers = familyMembers.filter((member) => member.status === "active")
+  console.log('Active members:', activeMembers) // For potential future use
   const pendingMembers = familyMembers.filter((member) => member.status === "pending")
   const parents = familyMembers.filter((member) => member.role === "parent")
   const children = familyMembers.filter((member) => member.role === "child")

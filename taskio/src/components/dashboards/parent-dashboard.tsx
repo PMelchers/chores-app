@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { Button } from "../ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Input } from "../ui/input"
@@ -20,7 +20,6 @@ import {
   CheckCircle,
   Clock,
   Trash2,
-  Edit2,
   Star,
   Target
 } from "lucide-react"
@@ -28,7 +27,8 @@ import { format } from "date-fns"
 
 export function ParentDashboard() {
   const { user } = useAuth()
-  const { tasks, loading, addTask, deleteTask, toggleTaskCompletion, error } = useTasks()
+  const { tasks, loading, addTask, deleteTask, approveTask, getPendingTasks, error } = useTasks()
+  const [pendingApprovalTasks, setPendingApprovalTasks] = useState<any[]>([])
 
   const [showAddTask, setShowAddTask] = useState(false)
   const [newTask, setNewTask] = useState({
@@ -38,6 +38,31 @@ export function ParentDashboard() {
     points: 10,
     dueDate: ""
   })
+
+  // Load pending tasks
+  const loadPendingTasks = async () => {
+    try {
+      const pending = await getPendingTasks()
+      setPendingApprovalTasks(pending)
+    } catch (error) {
+      console.error("Failed to load pending tasks:", error)
+    }
+  }
+
+  // Load pending tasks on component mount
+  React.useEffect(() => {
+    loadPendingTasks()
+  }, [])
+
+  const handleApproveTask = async (taskId: string, approved: boolean) => {
+    try {
+      await approveTask(taskId, approved)
+      // Refresh pending tasks
+      await loadPendingTasks()
+    } catch (error) {
+      console.error("Failed to approve task:", error)
+    }
+  }
 
   const handleAddTask = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -83,15 +108,22 @@ export function ParentDashboard() {
   }
 
   const handleToggleTask = async (taskId: string) => {
+    // For parents: directly toggle task completion
     try {
-      await toggleTaskCompletion(taskId)
+      const task = tasks.find(t => t.id === taskId)
+      if (task) {
+        await databaseService.updateTask(taskId, { 
+          completed: !task.completed,
+          pendingApproval: false // Parents can directly complete/uncomplete
+        })
+      }
     } catch (error) {
       console.error("Failed to toggle task:", error)
     }
   }
 
   const completedTasks = tasks.filter(task => task.completed)
-  const pendingTasks = tasks.filter(task => !task.completed)
+  const pendingTasks = tasks.filter(task => !task.completed && !task.pendingApproval)
   const totalPoints = completedTasks.reduce((sum, task) => sum + (task.points || 0), 0)
 
   if (loading) {
@@ -161,6 +193,71 @@ export function ParentDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Pending Approval Tasks */}
+        {pendingApprovalTasks.length > 0 && (
+          <Card className="border-orange-200 bg-orange-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-orange-800">
+                <Clock className="h-5 w-5" />
+                Tasks Awaiting Approval ({pendingApprovalTasks.length})
+              </CardTitle>
+              <CardDescription className="text-orange-700">
+                Children have submitted these tasks for your approval
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {pendingApprovalTasks.map((task) => (
+                <Card key={task.id} className="bg-white border border-orange-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Clock className="h-4 w-4 text-orange-500" />
+                          <h4 className="font-semibold text-lg">{task.title}</h4>
+                        </div>
+                        {task.description && (
+                          <p className="text-sm text-gray-600 mb-2">{task.description}</p>
+                        )}
+                        <div className="flex items-center gap-3">
+                          <Badge className="bg-yellow-100 text-yellow-800">
+                            <Star className="h-3 w-3 mr-1" />
+                            {task.points || 0} points
+                          </Badge>
+                          {task.dueDate && (
+                            <Badge className="border border-gray-300 text-gray-600 text-xs">
+                              <Calendar className="h-3 w-3 mr-1" />
+                              Due: {format(new Date(task.dueDate), 'MMM d')}
+                            </Badge>
+                          )}
+                          <Badge className="bg-orange-100 text-orange-800">
+                            🕐 Awaiting Approval
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 ml-4">
+                        <Button
+                          onClick={() => handleApproveTask(task.id, true)}
+                          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2"
+                          size="sm"
+                        >
+                          ✅ Approve
+                        </Button>
+                        <Button
+                          onClick={() => handleApproveTask(task.id, false)}
+                          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2"
+                          size="sm"
+                        >
+                          ❌ Deny
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

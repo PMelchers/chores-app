@@ -107,7 +107,7 @@ export default function HomePage() {
       {/* Main Content */}
       <div className="p-4">
         {activeTab === 'dashboard' ? (
-          userRole === "parent" ? <ParentDashboard /> : <ChildDashboard />
+          userRole === "parent" ? <ParentDashboard /> : <ChildDashboard onNavigate={(tab) => setActiveTab(tab as 'dashboard' | 'rewards' | 'quests' | 'family')} />
         ) : activeTab === 'quests' ? (
           userRole === "parent" ? (
             <div className="space-y-6">
